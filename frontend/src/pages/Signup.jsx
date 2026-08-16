@@ -25,17 +25,14 @@ const Signup = () => {
     confirmPassword: ''
   })
 
-  const handleChange = (e) => {
+  const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
 
+  const handleChange = (e) => {
     let { name, value } = e.target
 
-    // Mobile validation
     if (name === 'mobile') {
-
-      // allow only numbers
       value = value.replace(/\D/g, '')
-
-      // limit to 10 digits
       if (value.length > 10) return
     }
 
@@ -43,87 +40,62 @@ const Signup = () => {
       ...formData,
       [name]: value
     })
+    if (errorMsg) setErrorMsg('')
   }
 
-  const [loading, setLoading] = useState(false)
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setErrorMsg('')
 
-const handleSubmit = async (e) => {
+    try {
+      if (
+        !formData.name ||
+        !formData.email ||
+        !formData.mobile ||
+        !formData.password ||
+        !formData.confirmPassword
+      ) {
+        setErrorMsg('Please fill all fields')
+        return
+      }
 
-  e.preventDefault()
+      if (formData.mobile.length !== 10) {
+        setErrorMsg('Mobile number must contain exactly 10 digits')
+        return
+      }
 
-  try {
+      if (formData.password.length < 6) {
+        setErrorMsg('Password must be at least 6 characters')
+        return
+      }
 
-    // Empty fields
-    if (
-      !formData.name ||
-      !formData.email ||
-      !formData.mobile ||
-      !formData.password ||
-      !formData.confirmPassword
-    ) {
+      if (formData.password !== formData.confirmPassword) {
+        setErrorMsg('Passwords do not match')
+        return
+      }
 
-      alert('Please fill all fields')
+      setLoading(true)
 
-      return
+      const data = await registerUser({
+        name: formData.name,
+        email: formData.email,
+        mobile: formData.mobile,
+        password: formData.password
+      })
+
+      login(data)
+      navigate('/dashboard')
+
+    } catch (error) {
+      console.error('Registration error:', error)
+      const msg =
+        error.response?.data?.error ||
+        'Registration failed. Please try again.'
+      setErrorMsg(msg)
+    } finally {
+      setLoading(false)
     }
-
-    // Mobile validation
-    if (formData.mobile.length !== 10) {
-
-      alert('Mobile number must contain exactly 10 digits')
-
-      return
-    }
-
-    // Password validation
-    if (formData.password.length < 6) {
-
-      alert('Password must be at least 6 characters')
-
-      return
-    }
-
-    // Password match
-    if (
-      formData.password !==
-      formData.confirmPassword
-    ) {
-
-      alert('Passwords do not match')
-
-      return
-    }
-
-    setLoading(true)
-
-    // Backend API call
-    const data = await registerUser({
-      name: formData.name,
-      email: formData.email,
-      mobile: formData.mobile,
-      password: formData.password
-    })
-
-    // Save login
-    login(data)
-
-    // Redirect
-    navigate('/dashboard')
-
-  } catch (error) {
-
-    console.log(error)
-
-    alert(
-      error.response?.data?.error ||
-      'Signup failed'
-    )
-
-  } finally {
-
-    setLoading(false)
   }
-}
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex items-center justify-center px-4">
 
@@ -160,6 +132,13 @@ const handleSubmit = async (e) => {
           </p>
         </div>
 
+        {/* Error Message */}
+        {errorMsg && (
+          <div className="mb-5 p-4 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-sm text-center">
+            {errorMsg}
+          </div>
+        )}
+
         {/* Form */}
         <form
           onSubmit={handleSubmit}
@@ -183,6 +162,7 @@ const handleSubmit = async (e) => {
                 placeholder="Enter your full name"
                 value={formData.name}
                 onChange={handleChange}
+                disabled={loading}
                 className="bg-transparent outline-none text-white w-full placeholder:text-slate-400"
               />
 
@@ -206,6 +186,7 @@ const handleSubmit = async (e) => {
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
+                disabled={loading}
                 className="bg-transparent outline-none text-white w-full placeholder:text-slate-400"
               />
 
@@ -229,6 +210,7 @@ const handleSubmit = async (e) => {
                 placeholder="Enter mobile number"
                 value={formData.mobile}
                 onChange={handleChange}
+                disabled={loading}
                 maxLength={10}
                 className="bg-transparent outline-none text-white w-full placeholder:text-slate-400"
               />
@@ -258,6 +240,7 @@ const handleSubmit = async (e) => {
                 placeholder="Create password"
                 value={formData.password}
                 onChange={handleChange}
+                disabled={loading}
                 className="bg-transparent outline-none text-white w-full placeholder:text-slate-400"
               />
 
@@ -286,6 +269,7 @@ const handleSubmit = async (e) => {
                 placeholder="Confirm password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
+                disabled={loading}
                 className="bg-transparent outline-none text-white w-full placeholder:text-slate-400"
               />
 
@@ -295,7 +279,7 @@ const handleSubmit = async (e) => {
           {/* Terms */}
           <div className="flex items-center gap-2 text-sm text-slate-300">
 
-            <input type="checkbox" required />
+            <input type="checkbox" required disabled={loading} />
 
             <span>
               I agree to the Terms & Conditions
@@ -306,9 +290,10 @@ const handleSubmit = async (e) => {
           {/* Button */}
           <button
             type="submit"
-            className="w-full bg-emerald-500 hover:bg-emerald-400 transition-all duration-300 text-white font-semibold py-3 rounded-xl shadow-lg"
+            disabled={loading}
+            className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 text-white font-semibold py-3 rounded-xl shadow-lg"
           >
-            Create Account
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
 
         </form>

@@ -11,51 +11,56 @@ export const AuthProvider = ({
   children
 }) => {
 
-  const [user, setUser] = useState(null)
+  const [token, setToken] = useState(() => {
+    return localStorage.getItem('token') || null
+  })
 
-  const [token, setToken] = useState(
-    localStorage.getItem('token') || null
-  )
-
-  // Restore user
-  useEffect(() => {
-
+  const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user')
-
     if (savedUser) {
-      setUser(JSON.parse(savedUser))
+      try {
+        return JSON.parse(savedUser)
+      } catch (error) {
+        console.error('Failed to parse stored user', error)
+        return null
+      }
     }
+    return null
+  })
 
-  }, [])
-
-  // Login
+  // Login - saves user and token to state and localStorage
   const login = (data) => {
+    if (!data) return
 
-    setUser(data.user)
+    const userObj = data.user || null
+    const tokenStr = data.token || null
 
-    setToken(data.token)
+    setUser(userObj)
+    setToken(tokenStr)
 
-    localStorage.setItem(
-      'token',
-      data.token
-    )
-
-    localStorage.setItem(
-      'user',
-      JSON.stringify(data.user)
-    )
+    if (tokenStr) {
+      localStorage.setItem('token', tokenStr)
+    }
+    if (userObj) {
+      localStorage.setItem('user', JSON.stringify(userObj))
+    }
   }
 
-  // Logout
+  // Logout - clears user and token from state and localStorage
   const logout = () => {
-
     setUser(null)
-
     setToken(null)
-
     localStorage.removeItem('token')
-
     localStorage.removeItem('user')
+  }
+
+  // Update User Budget in state and localStorage
+  const updateUserBudget = (newBudget) => {
+    setUser((prev) => {
+      const updated = prev ? { ...prev, budget: newBudget } : { budget: newBudget }
+      localStorage.setItem('user', JSON.stringify(updated))
+      return updated
+    })
   }
 
   return (
@@ -64,7 +69,8 @@ export const AuthProvider = ({
         user,
         token,
         login,
-        logout
+        logout,
+        updateUserBudget
       }}
     >
       {children}

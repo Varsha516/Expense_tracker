@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card'
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
 
-export const LineChartComponent = ({ data, title, dataKey }) => {
+export const LineChartComponent = ({ data, title, dataKey = 'value' }) => {
   return (
     <Card>
       <CardHeader>
@@ -32,6 +32,7 @@ export const LineChartComponent = ({ data, title, dataKey }) => {
             <XAxis dataKey="name" stroke="#6b7280" />
             <YAxis stroke="#6b7280" />
             <Tooltip
+              formatter={(val) => [`₹${Number(val).toLocaleString('en-IN')}`, '']}
               contentStyle={{
                 backgroundColor: '#ffffff',
                 border: '1px solid #e5e7eb',
@@ -44,7 +45,7 @@ export const LineChartComponent = ({ data, title, dataKey }) => {
               dataKey={dataKey}
               stroke="#3b82f6"
               dot={{ fill: '#3b82f6' }}
-              strokeWidth={2}
+              strokeWidth={2.5}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -53,7 +54,7 @@ export const LineChartComponent = ({ data, title, dataKey }) => {
   )
 }
 
-export const BarChartComponent = ({ data, title, dataKey }) => {
+export const BarChartComponent = ({ data, title, dataKey, bars }) => {
   return (
     <Card>
       <CardHeader>
@@ -66,6 +67,7 @@ export const BarChartComponent = ({ data, title, dataKey }) => {
             <XAxis dataKey="name" stroke="#6b7280" />
             <YAxis stroke="#6b7280" />
             <Tooltip
+              formatter={(val) => [`₹${Number(val).toLocaleString('en-IN')}`, '']}
               contentStyle={{
                 backgroundColor: '#ffffff',
                 border: '1px solid #e5e7eb',
@@ -73,7 +75,13 @@ export const BarChartComponent = ({ data, title, dataKey }) => {
               }}
             />
             <Legend />
-            <Bar dataKey={dataKey} fill="#3b82f6" radius={[8, 8, 0, 0]} />
+            {bars && Array.isArray(bars) ? (
+              bars.map((b, idx) => (
+                <Bar key={b.key || idx} dataKey={b.key} fill={b.fill || COLORS[idx % COLORS.length]} radius={[8, 8, 0, 0]} />
+              ))
+            ) : (
+              <Bar dataKey={dataKey} fill="#3b82f6" radius={[8, 8, 0, 0]} />
+            )}
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
@@ -95,8 +103,8 @@ export const PieChartComponent = ({ data, title }) => {
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, value }) => `${name}: ${value}%`}
-              outerRadius={80}
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              outerRadius={85}
               fill="#8884d8"
               dataKey="value"
             >
@@ -104,7 +112,8 @@ export const PieChartComponent = ({ data, title }) => {
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip formatter={(val) => [`₹${Number(val).toLocaleString('en-IN')}`, 'Amount']} />
+            <Legend />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 
 import { useAuth } from '../context/AuthContext'
+import { loginUser } from '../api/authApi'
 
 const Login = () => {
 
@@ -19,25 +20,44 @@ const Login = () => {
     emailOrMobile: '',
     password: ''
   })
+  const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     })
+    if (errorMsg) setErrorMsg('')
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setErrorMsg('')
 
     if (!formData.emailOrMobile || !formData.password) {
-      alert('Please fill all fields')
+      setErrorMsg('Please fill all fields')
       return
     }
 
-    login()
+    try {
+      setLoading(true)
+      const data = await loginUser({
+        emailOrMobile: formData.emailOrMobile,
+        password: formData.password
+      })
 
-    navigate('/dashboard')
+      login(data)
+      navigate('/dashboard')
+    } catch (error) {
+      console.error('Login error:', error)
+      const message =
+        error.response?.data?.error ||
+        'Login failed. Please check your credentials.'
+      setErrorMsg(message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -72,6 +92,13 @@ const Login = () => {
           </p>
         </div>
 
+        {/* Error Message */}
+        {errorMsg && (
+          <div className="mb-5 p-4 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-sm text-center">
+            {errorMsg}
+          </div>
+        )}
+
         {/* Form */}
         <form
           onSubmit={handleSubmit}
@@ -95,6 +122,7 @@ const Login = () => {
                 placeholder="Enter email or mobile number"
                 value={formData.emailOrMobile}
                 onChange={handleChange}
+                disabled={loading}
                 className="bg-transparent outline-none text-white w-full placeholder:text-slate-400"
               />
             </div>
@@ -117,6 +145,7 @@ const Login = () => {
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
+                disabled={loading}
                 className="bg-transparent outline-none text-white w-full placeholder:text-slate-400"
               />
             </div>
@@ -141,9 +170,10 @@ const Login = () => {
           {/* Button */}
           <button
             type="submit"
-            className="w-full bg-emerald-500 hover:bg-emerald-400 transition-all duration-300 text-white font-semibold py-3 rounded-xl shadow-lg"
+            disabled={loading}
+            className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 text-white font-semibold py-3 rounded-xl shadow-lg"
           >
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
 
         </form>

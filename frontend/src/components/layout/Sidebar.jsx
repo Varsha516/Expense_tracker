@@ -6,6 +6,8 @@ import {
   Wallet,
   BarChart3,
   Lightbulb,
+  Calendar as CalendarIcon,
+  FileText,
   Settings,
   LogOut,
   Menu,
@@ -22,6 +24,8 @@ const Sidebar = () => {
   const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Transactions', path: '/transactions', icon: Wallet },
+    { name: 'Reports', path: '/reports', icon: FileText },
+    { name: 'Calendar', path: '/calendar', icon: CalendarIcon },
     { name: 'Analytics', path: '/analytics', icon: BarChart3 },
     { name: 'Insights', path: '/insights', icon: Lightbulb },
     { name: 'Settings', path: '/settings', icon: Settings }
@@ -45,23 +49,20 @@ const Sidebar = () => {
       </button>
 
       {/* Sidebar */}
-      <motion.div
-        initial={false}
-        animate={{
-          x: isOpen ? 0 : -320
-        }}
-        transition={{ duration: 0.3 }}
-        className="fixed left-0 top-0 z-40 md:z-30 w-80 h-screen bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 shadow-lg md:shadow-none"
+      <div
+        className={`fixed md:sticky top-0 left-0 z-40 md:z-30 w-72 h-screen bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 shadow-lg md:shadow-none transition-transform duration-300 flex flex-col justify-between ${
+          isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
       >
         {/* Header */}
-        <div className="h-20 flex items-center justify-center border-b border-gray-200 dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <Zap size={24} className="text-white" />
+        <div className="h-[65px] flex items-center px-6 border-b border-gray-200 dark:border-slate-800 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md">
+              <Zap size={20} className="text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-900 dark:text-white">ExpenseAI</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Fintech Suite</p>
+              <h1 className="text-base font-bold text-gray-900 dark:text-white leading-tight">ExpenseAI</h1>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400">Fintech Suite</p>
             </div>
           </div>
         </div>
@@ -100,7 +101,7 @@ const Sidebar = () => {
             Logout
           </button>
         </div>
-      </motion.div>
+      </div>
 
       {/* Overlay */}
       {isOpen && (

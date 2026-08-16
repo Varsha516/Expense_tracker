@@ -45,7 +45,9 @@ const AddTransactionModal = ({
   isOpen,
   onClose,
   onAddTransaction,
-  editingTransaction
+  editingTransaction,
+  submitting = false,
+  errorMsg = ''
 }) => {
 
   const [formData, setFormData] = useState({
@@ -57,17 +59,38 @@ const AddTransactionModal = ({
     image: null
   })
 
-  const handleChange = (e) => {
+  useEffect(() => {
+    if (editingTransaction) {
+      setFormData({
+        amount: editingTransaction.amount !== undefined ? String(editingTransaction.amount) : '',
+        type: editingTransaction.type || 'expense',
+        category: editingTransaction.category || '',
+        date: editingTransaction.date
+          ? new Date(editingTransaction.date).toISOString().split('T')[0]
+          : '',
+        note: editingTransaction.description || editingTransaction.note || '',
+        image: editingTransaction.image || null
+      })
+    } else {
+      setFormData({
+        amount: '',
+        type: 'expense',
+        category: '',
+        date: new Date().toISOString().split('T')[0],
+        note: '',
+        image: null
+      })
+    }
+  }, [editingTransaction, isOpen])
 
+  const handleChange = (e) => {
     const { name, value } = e.target
 
     if (name === 'date') {
-
       setFormData({
         ...formData,
-        date: formatDateInput(value)
+        date: value
       })
-
       return
     }
 
@@ -78,11 +101,8 @@ const AddTransactionModal = ({
   }
 
   const handleImageUpload = (e) => {
-
     const file = e.target.files[0]
-
     if (file) {
-
       setFormData({
         ...formData,
         image: URL.createObjectURL(file)
@@ -90,38 +110,27 @@ const AddTransactionModal = ({
     }
   }
 
-  const handleSubmit = (e) => {
-
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
-    const newTransaction = {
-      id: Date.now(),
-      ...formData
+    if (!formData.amount || !formData.type || !formData.category) {
+      alert('Please fill required fields (Amount, Type, Category)')
+      return
+    }
+
+    const payload = {
+      amount: Number(formData.amount),
+      type: formData.type,
+      category: formData.category,
+      description: formData.note || '',
+      date: formData.date ? new Date(formData.date).toISOString() : new Date().toISOString(),
+      image: formData.image || null
     }
 
     if (onAddTransaction) {
-      onAddTransaction(newTransaction)
+      await onAddTransaction(payload)
     }
-
-    setFormData({
-      amount: '',
-      type: 'expense',
-      category: '',
-      date: '',
-      note: '',
-      image: null
-    })
-
-    onClose()
   }
-  useEffect(() => {
-
-  if (editingTransaction) {
-
-    setFormData(editingTransaction)
-  }
-
-}, [editingTransaction])
 
   return (
 
@@ -150,7 +159,7 @@ const AddTransactionModal = ({
               <div>
 
                 <h2 className="text-3xl font-bold text-white">
-                  Add Transaction
+                  {editingTransaction ? 'Edit Transaction' : 'Add Transaction'}
                 </h2>
 
                 <p className="text-slate-400 mt-1">
@@ -161,7 +170,8 @@ const AddTransactionModal = ({
 
               <button
                 onClick={onClose}
-                className="w-12 h-12 rounded-2xl bg-white/[0.05] hover:bg-red-500/20 transition-all duration-300 flex items-center justify-center"
+                disabled={submitting}
+                className="w-12 h-12 rounded-2xl bg-white/[0.05] hover:bg-red-500/20 transition-all duration-300 flex items-center justify-center disabled:opacity-50"
               >
 
                 <X className="text-slate-300 w-6 h-6" />
@@ -169,6 +179,12 @@ const AddTransactionModal = ({
               </button>
 
             </div>
+
+            {errorMsg && (
+              <div className="mx-8 mt-6 p-4 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-sm text-center">
+                {errorMsg}
+              </div>
+            )}
 
             {/* Form */}
             <form
@@ -391,15 +407,16 @@ const AddTransactionModal = ({
 
               </div>
 
-              {/* Add Button */}
+              {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-400 hover:scale-[1.01] transition-all duration-300 text-white font-semibold shadow-xl shadow-emerald-500/20"
+                disabled={submitting}
+                className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-400 hover:scale-[1.01] transition-all duration-300 text-white font-semibold shadow-xl shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
 
                 <Plus className="w-5 h-5" />
 
-                Add Transaction
+                {submitting ? 'Saving...' : (editingTransaction ? 'Update Transaction' : 'Add Transaction')}
 
               </button>
 

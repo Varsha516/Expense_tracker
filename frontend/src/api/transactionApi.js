@@ -1,10 +1,8 @@
 import API from './axios'
 
-// Get all transactions
-export const fetchTransactions = async () => {
-
-  const response = await API.get('/transactions')
-
+// Get transactions (with search, filtering, sorting, pagination)
+export const fetchTransactions = async (params = {}) => {
+  const response = await API.get('/transactions', { params })
   return response.data
 }
 
