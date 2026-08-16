@@ -5,6 +5,14 @@ const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
+const userRoutes = require('./routes/userRoutes');
+const insightRoutes = require('./routes/insightRoutes');
+const budgetRoutes = require('./routes/budgetRoutes');
+const goalRoutes = require('./routes/goalRoutes');
+const recurringRoutes = require('./routes/recurringRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const calendarRoutes = require('./routes/calendarRoutes');
+const reportRoutes = require('./routes/reportRoutes');
 
 const app = express();
 
@@ -16,6 +24,14 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/insights', insightRoutes);
+app.use('/api/category-budgets', budgetRoutes);
+app.use('/api/goals', goalRoutes);
+app.use('/api/recurring', recurringRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/calendar', calendarRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
